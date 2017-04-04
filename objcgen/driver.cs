@@ -29,7 +29,7 @@ namespace Embeddinator {
 			} catch (Exception e) {
 				ErrorHelper.Show (e);
 				return 1;
-			}
+			} 
 		}
 
 		public static int Main2 (string [] args)

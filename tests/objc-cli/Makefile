@@ -10,14 +10,16 @@ libmanaged.dylib: managed.dll
 	/Library/Frameworks/Mono.framework/Versions/Current/Commands/xbuild ../../objcgen/objcgen.csproj
 	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug ../../objcgen/bin/Debug/objcgen.exe --debug managed.dll -c
 
-test: libmanaged.dylib
-	clang test-managed.m -lmanaged -L. -framework Foundation -o test-cli -rpath @executable_path
+test-cli: test-managed.m libmanaged.dylib
+	clang -g $< leak-check.c -lmanaged -L. -framework Foundation -o $@ -rpath @executable_path
 
-run-test: test
+perf-cli: perf-test.m libmanaged.dylib
+	clang -g $< leak-check.c -lmanaged -L. -framework Foundation -o $@ -rpath @executable_path
+
+run-test: test-cli
 	./test-cli
-	
-perf: libmanaged.dylib
-	clang perf-test.m -lmanaged -L. -framework Foundation -o perf-cli -rpath @executable_path
+
+perf: perf-cli
 	time ./perf-cli
 
 clean:
@@ -25,3 +27,14 @@ clean:
 
 xctest:
 	xcodebuild test -project libmanaged/*.xcodeproj -scheme Tests
+
+test-leaks: test-cli-leaks test-perf-leaks
+
+test-cli-leaks: test-cli
+	mono --debug ../leaktest/bin/Debug/leaktest.exe $(abspath $<)
+
+test-perf-leaks: perf-cli
+	mono --debug ../leaktest/bin/Debug/leaktest.exe $(abspath $<)
+
+libLeakCheckAtExit.dylib: leak-at-exit.c
+	clang -arch i386 -arch x86_64 -shared $< -o $@
