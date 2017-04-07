@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Mono managed-to-native support code.
  *
  * Author:
@@ -66,9 +66,14 @@ typedef struct _GString GString;
 typedef struct _MonoDomain MonoDomain;
 typedef struct _MonoException MonoException;
 typedef struct _MonoClass MonoClass;
+// #if !defined (XAMARIN_IOS)
 typedef struct _MonoObject MonoObject;
+// #else
+// #include <xamarin/xamarin.h>
+// #endif
 typedef struct _MonoImage MonoImage;
 typedef struct _MonoMethod MonoMethod;
+// typedef struct _MonoMethodDesc MonoMethodDesc;
 
 MONO_EMBEDDINATOR_BEGIN_DECLS
 

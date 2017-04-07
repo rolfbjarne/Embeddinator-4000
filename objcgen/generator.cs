@@ -6,6 +6,7 @@ using Type = IKVM.Reflection.Type;
 namespace Embeddinator {
 
 	public class Generator {
+		public Platform Platform { get; set; }
 
 		public virtual void Process (IEnumerable<Assembly> assemblies)
 		{

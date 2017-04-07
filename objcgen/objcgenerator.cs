@@ -96,6 +96,24 @@ namespace ObjC {
 			implementation.WriteLine ("#include <mono/metadata/object.h>");
 			implementation.WriteLine ("#include <mono/metadata/mono-config.h>");
 			implementation.WriteLine ("#include <mono/metadata/debug-helpers.h>");
+			switch (Platform) {
+			case Platform.iOS:
+			case Platform.watchOS:
+			case Platform.tvOS:
+				//implementation.WriteLine ("#include <xamarin/xamarin.h>");
+				implementation.WriteLine ("int xamarin_initialize_embedded ();");
+				break;
+			case Platform.macOS:
+				// This will change once we integrate with XM
+				//implementation.WriteLine ("#include <mono/jit/jit.h>");
+				//implementation.WriteLine ("#include <mono/metadata/assembly.h>");
+				//implementation.WriteLine ("#include <mono/metadata/object.h>");
+				//implementation.WriteLine ("#include <mono/metadata/mono-config.h>");
+				//implementation.WriteLine ("#include <mono/metadata/debug-helpers.h>");
+				break;
+			default:
+				throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+			}
 			implementation.WriteLine ();
 
 			implementation.WriteLine ("mono_embeddinator_context_t __mono_context;");
@@ -113,6 +131,17 @@ namespace ObjC {
 			implementation.WriteLine ("{");
 			implementation.WriteLine ("\tif (__mono_context.domain)");
 			implementation.WriteLine ("\t\treturn;");
+			switch (Platform) {
+			case Platform.iOS:
+			case Platform.watchOS:
+			case Platform.tvOS:
+				implementation.WriteLine ("\txamarin_initialize_embedded ();");
+				break;
+			case Platform.macOS:
+				break; // do nothing until we're integrating with XM
+			default:
+				throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+			}
 			implementation.WriteLine ("\tmono_embeddinator_init (&__mono_context, \"mono_embeddinator_binding\");");
 			implementation.WriteLine ("}");
 			implementation.WriteLine ();
