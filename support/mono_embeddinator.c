@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Mono managed-to-native support code.
  *
  * Author:
@@ -46,10 +46,14 @@
 #include <Windows.h>
 #endif
 
+// #if defined (XAMARIN_IOS) || defined (XAMARIN_MAC)
+// #include <xamarin/xamarin.h>
+// #else
 #include <mono/jit/jit.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
+// #endif
 
 mono_embeddinator_context_t* _current_context;
 
@@ -68,8 +72,12 @@ int mono_embeddinator_init(mono_embeddinator_context_t* ctx, const char* domain)
     if (ctx == 0 || ctx->domain != 0)
         return false;
 
+#if defined (XAMARIN_IOS)
+    ctx->domain = mono_domain_get ();
+#else
     mono_config_parse(NULL);
     ctx->domain = mono_jit_init_version(domain, "v4.0.30319");
+#endif
 
     mono_embeddinator_set_context(ctx);
 
@@ -146,19 +154,28 @@ char* mono_embeddinator_search_assembly(const char* assembly)
     return data;
 }
 
+#if defined (XAMARIN_IOS)
+MonoAssembly *xamarin_open_assembly (const char *name);
+#endif
+
+
 MonoImage* mono_embeddinator_load_assembly(mono_embeddinator_context_t* ctx, const char* assembly)
 {
+#if defined (XAMARIN_IOS)
+	MonoAssembly *mono_assembly = xamarin_open_assembly (assembly);
+#else
     char* path = mono_embeddinator_search_assembly(assembly);
 
     MonoAssembly* mono_assembly = mono_domain_assembly_open(ctx->domain, path);
 
     g_free (path);
+#endif
 
     if (!mono_assembly)
     {
         mono_embeddinator_error_t error;
         error.type = MONO_EMBEDDINATOR_ASSEMBLY_OPEN_FAILED;
-        error.string = path;
+        error.string = NULL;
         mono_embeddinator_error(error);
 
         return 0;
