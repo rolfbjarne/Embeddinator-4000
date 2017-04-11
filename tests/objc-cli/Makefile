@@ -14,7 +14,7 @@ $(MANAGED_DLL): $(wildcard $(MANAGED_DLL_DIR)/*.cs)
 
 managed.dll: $(MANAGED_DLL)
 	cp $< $@
-	mkdir release
+	mkdir -p release
 	cp $< release/
 
 libmanaged.dylib: managed.dll $(OBJC_GEN)
@@ -81,3 +81,8 @@ test-dynamic: test-dynamic-macos test-dynamic-ios test-dynamic-tvos test-dynamic
 
 test-dynamic-%: managed.dll $(OBJC_GEN)
 	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug $(OBJC_GEN) --debug managed.dll -c --outdir=build/$@-temp-dir --target=dylib --platform=$*
+
+test-framework: test-framework-macos test-framework-ios test-framework-tvos test-framework-watchos
+
+test-framework-%: managed.dll $(OBJC_GEN)
+	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug $(OBJC_GEN) --debug managed.dll -c --outdir=build/$@-temp-dir --target=framework --platform=$*
