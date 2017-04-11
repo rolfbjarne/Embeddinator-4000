@@ -28,6 +28,7 @@
 
 #include "mono_embeddinator.h"
 #include "glib.h"
+#include "mono-support.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -45,11 +46,6 @@
 #ifdef _WIN32
 #include <Windows.h>
 #endif
-
-#include <mono/jit/jit.h>
-#include <mono/metadata/mono-config.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
 
 mono_embeddinator_context_t* _current_context;
 
