@@ -80,3 +80,8 @@ test-dynamic: test-dynamic-macos test-dynamic-ios test-dynamic-tvos test-dynamic
 
 test-dynamic-%: $(MANAGED_DLL) $(OBJC_GEN)
 	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug $(OBJC_GEN) --debug $(MANAGED_DLL) -c --outdir=build/$@-temp-dir --target=dylib --platform=$*
+
+test-framework: test-framework-macos test-framework-ios test-framework-tvos test-framework-watchos
+
+test-framework-%: managed.dll $(OBJC_GEN)
+	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug $(OBJC_GEN) --debug managed.dll -c --outdir=build/$@-temp-dir --target=framework --platform=$*

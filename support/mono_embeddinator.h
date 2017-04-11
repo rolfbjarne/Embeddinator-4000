@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Mono managed-to-native support code.
  *
  * Author:

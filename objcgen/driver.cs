@@ -193,6 +193,7 @@ namespace Embeddinator {
 			}
 		}
 
+		public List<Assembly> Assemblies { get; private set; } = new List<Assembly> ();
 		public Platform Platform { get; set; } = Platform.macOS;
 		public TargetLanguage TargetLanguage { get; private set; } = TargetLanguage.ObjectiveC;
 		public CompilationTarget CompilationTarget { get; set; } = CompilationTarget.SharedLibrary;
@@ -202,9 +203,8 @@ namespace Embeddinator {
 			Console.WriteLine ("Parsing assemblies...");
 
 			var universe = new Universe (UniverseOptions.MetadataOnly);
-			var assemblies = new List<Assembly> ();
 			foreach (var arg in args) {
-				assemblies.Add (universe.LoadFile (arg));
+				Assemblies.Add (universe.LoadFile (arg));
 				Console.WriteLine ($"\tParsed '{arg}'");
 			}
 
@@ -214,10 +214,10 @@ namespace Embeddinator {
 
 			Console.WriteLine ("Processing assemblies...");
 			var g = new ObjCGenerator ();
-			g.Process (assemblies);
+			g.Process (Assemblies);
 
 			Console.WriteLine ("Generating binding code...");
-			g.Generate (assemblies);
+			g.Generate (Assemblies);
 			g.Write (OutputDirectory);
 
 			var exe = typeof (Driver).Assembly;
@@ -239,17 +239,11 @@ namespace Embeddinator {
 		static string XcodeApp {
 			get {
 				if (string.IsNullOrEmpty (xcode_app)) {
-					using (var process = new Process ()) {
-						process.StartInfo.FileName = "xcode-select";
-						process.StartInfo.Arguments = "-p";
-						process.StartInfo.UseShellExecute = false;
-						process.StartInfo.RedirectStandardOutput = true;
-						process.Start ();
-						var output = process.StandardOutput.ReadToEnd ();
-						if (process.ExitCode != 0)
-							throw ErrorHelper.CreateError (6, "Could not find the Xcode location.");
-						xcode_app = Path.GetDirectoryName (Path.GetDirectoryName (output.Trim ()));
-					}
+					int exitCode;
+					string output;
+					if (!RunProcess ("xcode-select", "-p", out exitCode, out output))
+						throw ErrorHelper.CreateError (6, "Could not find the Xcode location.");
+					xcode_app = Path.GetDirectoryName (Path.GetDirectoryName (output.Trim ()));
 				}
 				return xcode_app;
 			}
@@ -264,6 +258,10 @@ namespace Embeddinator {
 			public string XamariniOSSDK;
 			public string CompilerFlags;
 			public string LinkerFlags;
+
+			public bool IsSimulator {
+				get { return Sdk.Contains ("Simulator"); }
+			}
 		}
 
 		public int Compile ()
@@ -300,16 +298,6 @@ namespace Embeddinator {
 				throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
 			}
 
-			switch (CompilationTarget) {
-			case CompilationTarget.SharedLibrary:
-			case CompilationTarget.StaticLibrary:
-				break;
-			case CompilationTarget.Framework:
-				throw new NotImplementedException ($"Compilation target: {CompilationTarget}");
-			default:
-				throw ErrorHelper.CreateError (99, "Internal error: invalid compilation target {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", CompilationTarget);
-			}
-
 			var lipo_files = new List<string> ();
 			var output_file = string.Empty;
 
@@ -325,6 +313,7 @@ namespace Embeddinator {
 				output_file = $"lib{LibraryName}.dylib";
 				break;
 			case CompilationTarget.StaticLibrary:
+			case CompilationTarget.Framework:
 				output_file = $"{LibraryName}.a";
 				break;
 			default:
@@ -332,6 +321,25 @@ namespace Embeddinator {
 			}
 
 			int exitCode;
+
+			/*
+			 * For static libraries we
+			 * * Compile all source files to .o files, per architecture.
+			 * * Then we archive .o files into per-sdk .a files, then we archive all .o files into a global .a file. So we end up with one .a for device, one for simulator, and one for both device and simulator.
+			 * * Then we dsym the global .a file
+			 * 
+			 * For dynamic libraries we
+			 * * Compile all source files to .o files, per architecture.
+			 * * Then we link all .o files per architecture into a .dylib.
+			 * * Then we lipo .dylib files into per-sdk fat .dylib, then we lipo all .dylbi into a global .dylib file. So we end up with one fat .dylib for device, one fat .dylib for simulator, and one very fat .dylib for both simulator and device.
+			 * * Finally we dsymutil the global .dylib
+			 * 
+			 * For frameworks we
+			 * * First we build the source files to .o files and then archive to .a files just like for static libraries.
+			 * * Then we call mtouch to build a framework of the managed assemblies, passing the static library we just created as a gcc_flag so that it's linked in. This is done per sdk (simulator/device).
+			 * * We don't create a global framework, we stop at the per-sdk frameworks mtouch created.
+			 * * We dsymutil those frameworks.
+			 */
 
 			foreach (var build_info in build_infos) {
 				foreach (var arch in build_info.Architectures) {
@@ -349,9 +357,25 @@ namespace Embeddinator {
 					common_options.Append ($"-arch {arch} ");
 					common_options.Append ($"-isysroot {XcodeApp}/Contents/Developer/Platforms/{build_info.Sdk}.platform/Developer/SDKs/{build_info.Sdk}.sdk ");
 					common_options.Append ($"-m{build_info.SdkName}-version-min={build_info.MinVersion} ");
-					common_options.Append ("-I/Library/Frameworks/Mono.framework/Versions/Current/include/mono-2.0 ");
 
-					// Build each file to a .o
+					switch (Platform) {
+					case Platform.macOS:
+						// FIXME: Pending XM support to switch include directory.
+						//common_options.Append ("-I/Library/Frameworks/Xamarin.Mac.framework/Versions/Current/include ");
+						//common_options.Append ("-DXAMARIN_MAC ");
+						common_options.Append ("-I/Library/Frameworks/Mono.framework/Versions/Current/include/mono-2.0 ");
+						break;
+					case Platform.iOS:
+					case Platform.tvOS:
+					case Platform.watchOS:
+						common_options.Append ($"-I/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/SDKs/{build_info.XamariniOSSDK}/usr/include ");
+						common_options.Append ("-DXAMARIN_IOS ");
+						break;
+					default:
+						throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+					}
+
+					// Build each source file to a .o
 					var object_files = new List<string> ();
 					foreach (var file in files) {
 						var compiler_options = new StringBuilder (common_options.ToString ());
@@ -366,6 +390,7 @@ namespace Embeddinator {
 							return exitCode;
 					}
 
+					// Link/archive object files to .a/.dylib
 					switch (CompilationTarget) {
 					case CompilationTarget.SharedLibrary:
 						// Link all the .o files into a .dylib
@@ -385,6 +410,7 @@ namespace Embeddinator {
 						lipo_files.Add (dynamic_ofile);
 						if (!string.IsNullOrEmpty (build_info.XamariniOSSDK)) {
 							options.Append ($"-L/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/SDKs/{build_info.XamariniOSSDK}/usr/lib ");
+							options.Append ("-lxamarin ");
 						} else {
 							options.Append ("-L/Library/Frameworks/Mono.framework/Versions/Current/lib/ ");
 						}
@@ -392,6 +418,7 @@ namespace Embeddinator {
 						if (!Xcrun (options, out exitCode))
 							return exitCode;
 						break;
+					case CompilationTarget.Framework:
 					case CompilationTarget.StaticLibrary:
 						// Archive all the .o files into a .a
 						var archive_options = new StringBuilder ("ar cru ");
@@ -403,10 +430,67 @@ namespace Embeddinator {
 						if (!Xcrun (archive_options, out exitCode))
 							return exitCode;
 						break;
-					case CompilationTarget.Framework:
-						throw new NotImplementedException ("compile to framework");
 					default:
 						throw ErrorHelper.CreateError (99, "Internal error: invalid compilation target {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", CompilationTarget);
+					}
+				}
+
+				// Create the per-sdk output file
+				var sdk_output_file = Path.Combine (OutputDirectory, build_info.Sdk, output_file);
+				if (!Lipo (lipo_files, sdk_output_file, out exitCode))
+					return exitCode;
+
+				// Call mtouch if we're building a framework
+				if (CompilationTarget == CompilationTarget.Framework) {
+					switch (Platform) {
+					case Platform.macOS:
+						throw new NotImplementedException ("frameworks for macOS");
+					case Platform.iOS:
+					case Platform.tvOS:
+					case Platform.watchOS:
+						var mtouch = new StringBuilder ();
+						var appdir = Path.GetFullPath (Path.Combine (OutputDirectory, build_info.Sdk, "appdir"));
+						mtouch.Append (build_info.IsSimulator ? "--sim " : "--dev ");
+						mtouch.Append ($"{Quote (appdir)} ");
+						mtouch.Append ($"--abi={string.Join (",", build_info.Architectures)} ");
+						mtouch.Append ($"--sdkroot {XcodeApp} ");
+						mtouch.Append ($"--targetver {build_info.MinVersion} ");
+						mtouch.Append ("--dsym:false ");
+						mtouch.Append ($"--embeddinator ");
+						foreach (var asm in Assemblies)
+							mtouch.Append (Quote (Path.GetFullPath (asm.Location))).Append (" ");
+						mtouch.Append ($"-r:{GetPlatformAssembly ()} ");
+						mtouch.Append ($"--sdk {GetSdkVersion (build_info.Sdk.ToLower ())} ");
+						mtouch.Append ("--nostrip ");
+						mtouch.Append ("--nolink "); // FIXME: make the mtouch linker not strip away the root assemblies we're passing it.
+						mtouch.Append ($"--cache {Quote (Path.GetFullPath (Path.Combine (outputDirectory, build_info.Sdk, "mtouch-cache")))} ");
+						if (Debug)
+							mtouch.Append ("--debug ");
+						mtouch.Append ($"--assembly-build-target=@all=framework={LibraryName}.framework ");
+						mtouch.Append ($"--target-framework {GetTargetFramework ()} ");
+						mtouch.Append ($"\"--gcc_flags=-force_load {Path.GetFullPath (sdk_output_file)}\" ");
+						if (!RunProcess ("/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch", mtouch.ToString (), out exitCode))
+							return exitCode;
+
+						// Add the headers to the framework
+						var fwdir = Path.Combine (OutputDirectory, build_info.Sdk, "appdir", "Frameworks", $"{LibraryName}.framework");
+						var headers = Path.Combine (fwdir, "Headers");
+						Directory.CreateDirectory (headers);
+						foreach (var header in Directory.GetFiles (OutputDirectory, "*.h")) {
+							string target = Path.GetFileName (header);
+							if (header == "bindings.h")
+								target = LibraryName + ".h";
+							File.Copy (header, Path.Combine (headers, target), true);
+						}
+						// Move the framework to the output directory
+						var fwpath = Path.Combine (OutputDirectory, build_info.Sdk, $"{LibraryName}.framework");
+						if (Directory.Exists (fwpath))
+							Directory.Delete (fwpath, true);
+						Directory.Move (fwdir, fwpath);
+						Directory.Delete (appdir, true); // We don't need this anymore.
+						break;
+					default:
+						throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
 					}
 				}
 			}
@@ -419,6 +503,31 @@ namespace Embeddinator {
 				return exitCode;
 
 			return 0;
+		}
+
+		string GetSdkVersion (string sdk)
+		{
+			int exitCode;
+			string output;
+			if (!RunProcess ("xcrun", $"--show-sdk-version --sdk {sdk}", out exitCode, out output))
+				throw ErrorHelper.CreateError (7, $"Could not get the sdk version for '{sdk}'");
+			return output.Trim ();
+		}
+
+		string GetPlatformAssembly ()
+		{
+			switch (Platform) {
+			case Platform.macOS:
+				throw new NotImplementedException ("platform assembly for macOS"); // We need to know full/mobile
+			case Platform.iOS:
+				return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS/Xamarin.iOS.dll";
+			case Platform.tvOS:
+				return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.TVOS/Xamarin.TVOS.dll";
+			case Platform.watchOS:
+				return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.WatchOS/Xamarin.WatchOS.dll";
+			default:
+				throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+			}
 		}
 
 		string GetTargetFramework ()
@@ -434,6 +543,21 @@ namespace Embeddinator {
 				return "Xamarin.WatchOS,v1.0";
 			default:
 				throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+			}
+		}
+
+		public static bool RunProcess (string filename, string arguments, out int exitCode, out string stdout)
+		{
+			Console.WriteLine ($"\t{filename} {arguments}");
+			using (var p = new Process ()) {
+				p.StartInfo.FileName = filename;
+				p.StartInfo.Arguments = arguments;
+				p.StartInfo.UseShellExecute = false;
+				p.StartInfo.RedirectStandardOutput = true;
+				p.Start ();
+				stdout = p.StandardOutput.ReadToEnd ();
+				exitCode = p.ExitCode;
+				return exitCode == 0;
 			}
 		}
 
@@ -467,6 +591,7 @@ namespace Embeddinator {
 			string output;
 			switch (CompilationTarget) {
 			case CompilationTarget.StaticLibrary:
+			case CompilationTarget.Framework:
 				return true;
 			case CompilationTarget.SharedLibrary:
 				output = input + ".dSYM";

@@ -44,6 +44,10 @@ The tool does not support the compilation target `X`. It is possible that anothe
 
 The tool could not find the currently selected Xcode location using the `xcode-select -p` command. Please verify that this command succeeds, and returns the correct Xcode location.
 
+<h3><a name="EM0007"/>EM0007: Could not get the sdk version for '{sdk}'.</h3>
+
+The tool could not get the SDK version using the `xcrun --show-sdk-version --sdk {sdk}` command. Please verify that this command succeeds, and returns the SDK version.
+
 <h3><a name="EM0099"/>EM0099: Internal error *. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).</h3>
 
 This error message is reported when an internal consistency check in the Embeddinator-4000 fails.
