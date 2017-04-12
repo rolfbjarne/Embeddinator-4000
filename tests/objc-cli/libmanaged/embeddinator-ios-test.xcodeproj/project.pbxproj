@@ -42,7 +42,7 @@
 		7E6CE5FC1E97C3720054BCC8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7E6CE5FF1E97C3720054BCC8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7E6CE6011E97C3720054BCC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7E6CE6071E97C3E10054BCC8 /* managed.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = managed.framework; path = "../../build/test-framework-ios-temp-dir/iPhoneOS/appdir/Frameworks/managed.framework"; sourceTree = "<group>"; };
+		7E6CE6071E97C3E10054BCC8 /* managed.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = managed.framework; path = "../build/test-framework-ios-temp-dir/iPhoneSimulator/managed.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -298,7 +298,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = TGFVQHFHZF;
-				FRAMEWORK_SEARCH_PATHS = "/work/Embeddinator-4000/tests/objc-cli/build/test-framework-ios-temp-dir/iPhoneOS/appdir/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = "";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = "../build/test-framework-ios-temp-dir/iPhoneOS";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = "../build/test-framework-ios-temp-dir/iPhoneSimulator";
 				INFOPLIST_FILE = "embeddinator-ios-test/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rolfkvinge.embeddinator-ios-test";
@@ -311,7 +313,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = TGFVQHFHZF;
-				FRAMEWORK_SEARCH_PATHS = "/work/Embeddinator-4000/tests/objc-cli/build/test-framework-ios-temp-dir/iPhoneOS/appdir/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = "";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = "../build/test-framework-ios-temp-dir/iPhoneOS";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = "../build/test-framework-ios-temp-dir/iPhoneSimulator";
 				INFOPLIST_FILE = "embeddinator-ios-test/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.rolfkvinge.embeddinator-ios-test";
@@ -338,6 +342,7 @@
 				7E6CE6061E97C3720054BCC8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
