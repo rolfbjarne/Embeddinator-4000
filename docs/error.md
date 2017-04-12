@@ -44,6 +44,10 @@ The tool does not support the compilation target `X`. It is possible that anothe
 
 The tool could not find the currently selected Xcode location using the `xcode-select -p` command. Please verify that this command succeeds, and returns the correct Xcode location.
 
+<h3><a name="EM0007"/>EM0007: Could not get the sdk version for '{sdk}'.</h3>
+
+The tool could not get the SDK version using the `xcrun --show-sdk-version --sdk {sdk}` command. Please verify that this command succeeds, and returns the SDK version.
+
 <h3><a name="EM0008"/>EM0008: The architecture '{arch}' is not valid for {platform}. Valid architectures for {platform} are: '{architectures}'.</h3>
 
 The architecture in the error message is not valid for the targeted platform. Please verify that the --abi option is passed a valid architecture.
