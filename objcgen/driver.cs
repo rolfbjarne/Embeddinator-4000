@@ -503,7 +503,58 @@ namespace Embeddinator {
 			if (!DSymUtil (output_path, out exitCode))
 				return exitCode;
 
+			if (build_infos.Length == 2 && CompilationTarget == CompilationTarget.Framework) {
+				var dev_fwpath = Path.Combine (OutputDirectory, build_infos [0].Sdk, $"{LibraryName}.framework");
+				var sim_fwpath = Path.Combine (OutputDirectory, build_infos [1].Sdk, $"{LibraryName}.framework");
+				if (!MergeFrameworks (Path.Combine (OutputDirectory, LibraryName + ".framework"), dev_fwpath, sim_fwpath, out exitCode))
+					return exitCode;
+			}
+
 			return 0;
+		}
+
+		// All files from both frameworks will be included.
+		// For files present in both frameworks:
+		// * The executables will be lipoed
+		// * For any other files the deviceFramework version will win.
+		static bool MergeFrameworks (string output, string deviceFramework, string simulatorFramework, out int exitCode)
+		{
+			var name = Path.GetFileNameWithoutExtension (deviceFramework);
+			var deviceFiles = Directory.GetFiles (deviceFramework, "*", SearchOption.AllDirectories);
+			var simulatorFiles = Directory.GetFiles (simulatorFramework, "*", SearchOption.AllDirectories);
+
+			Directory.CreateDirectory (output);
+			var executables = new List<string> ();
+			executables.Add (Path.Combine (deviceFramework, name));
+			executables.Add (Path.Combine (simulatorFramework, name));
+			if (!Lipo (executables, Path.Combine (output, name), out exitCode))
+				return false;
+
+			foreach (var file in deviceFiles) {
+				if (Path.GetFileName (file) == name)
+					continue; // Skip the executable
+				var relativePath = file.Substring (deviceFramework.Length);
+				if (relativePath [0] == Path.DirectorySeparatorChar)
+					relativePath = relativePath.Substring (1);
+				var targetPath = Path.Combine (output, relativePath);
+				Directory.CreateDirectory (Path.GetDirectoryName (targetPath));
+				File.Copy (file, targetPath, true);
+			}
+
+			foreach (var file in simulatorFiles) {
+				if (Path.GetFileName (file) == name)
+					continue; // Skip the executable
+				var relativePath = file.Substring (simulatorFramework.Length);
+				if (relativePath [0] == Path.DirectorySeparatorChar)
+					relativePath = relativePath.Substring (1);
+				var targetPath = Path.Combine (output, relativePath);
+				if (File.Exists (targetPath))
+					continue;
+				Directory.CreateDirectory (Path.GetDirectoryName (targetPath));
+				File.Copy (file, targetPath, true);
+			}
+
+			return true;
 		}
 
 		string GetSdkVersion (string sdk)
