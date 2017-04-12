@@ -455,6 +455,7 @@ namespace Embeddinator {
 						mtouch.Append ($"--sdk {GetSdkVersion (build_info.Sdk.ToLower ())} ");
 						mtouch.Append ("--nostrip ");
 						mtouch.Append ("--nolink "); // FIXME: make the mtouch linker not strip away the root assemblies we're passing it.
+						mtouch.Append ("--registrar:static ");
 						mtouch.Append ($"--cache {Quote (Path.GetFullPath (Path.Combine (outputDirectory, build_info.Sdk, "mtouch-cache")))} ");
 						if (Debug)
 							mtouch.Append ("--debug ");
@@ -470,7 +471,7 @@ namespace Embeddinator {
 						Directory.CreateDirectory (headers);
 						foreach (var header in Directory.GetFiles (OutputDirectory, "*.h")) {
 							string target = Path.GetFileName (header);
-							if (header == "bindings.h")
+							if (target == "bindings.h")
 								target = LibraryName + ".h";
 							File.Copy (header, Path.Combine (headers, target), true);
 						}
