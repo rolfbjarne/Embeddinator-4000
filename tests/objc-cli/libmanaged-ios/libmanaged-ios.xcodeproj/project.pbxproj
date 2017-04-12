@@ -17,6 +17,7 @@
 		7E577A661E9E5A5E003FA392 /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E577A651E9E5A5E003FA392 /* Tests.m */; };
 		7E577A681E9E5AEA003FA392 /* managed.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E577A671E9E5AEA003FA392 /* managed.framework */; };
 		7E577A6B1E9E5D9C003FA392 /* managed.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7E577A671E9E5AEA003FA392 /* managed.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7E577A6D1E9E6D9D003FA392 /* managed.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7E577A671E9E5AEA003FA392 /* managed.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7E577A6C1E9E6D95003FA392 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				7E577A6D1E9E6D9D003FA392 /* managed.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -57,7 +68,7 @@
 		7E577A5A1E9E5A4C003FA392 /* libmanaged_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = libmanaged_iosTests.m; sourceTree = "<group>"; };
 		7E577A5C1E9E5A4C003FA392 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7E577A651E9E5A5E003FA392 /* Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Tests.m; path = ../../libmanaged/Tests/Tests.m; sourceTree = "<group>"; };
-		7E577A671E9E5AEA003FA392 /* managed.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = managed.framework; path = "../build/test-framework-ios-temp-dir/iPhoneSimulator/managed.framework"; sourceTree = "<group>"; };
+		7E577A671E9E5AEA003FA392 /* managed.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = managed.framework; path = "../build/test-framework-ios-temp-dir/managed.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +153,7 @@
 				7E577A391E9E5A4B003FA392 /* Sources */,
 				7E577A3A1E9E5A4B003FA392 /* Frameworks */,
 				7E577A3B1E9E5A4B003FA392 /* Resources */,
+				7E577A6C1E9E6D95003FA392 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -405,6 +417,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = TGFVQHFHZF;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = "../build/test-framework-ios-temp-dir/iPhoneOS";
 				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = "../build/test-framework-ios-temp-dir/iPhoneSimulator";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -452,6 +465,7 @@
 				7E577A611E9E5A4C003FA392 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7E577A621E9E5A4C003FA392 /* Build configuration list for PBXNativeTarget "libmanaged-iosTests" */ = {
 			isa = XCConfigurationList;
@@ -460,6 +474,7 @@
 				7E577A641E9E5A4C003FA392 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
