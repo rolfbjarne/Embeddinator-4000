@@ -361,7 +361,7 @@ namespace Embeddinator {
 			 * For frameworks we
 			 * * First we build the source files to .o files and then archive to .a files just like for static libraries.
 			 * * Then we call mtouch to build a framework of the managed assemblies, passing the static library we just created as a gcc_flag so that it's linked in. This is done per sdk (simulator/device).
-			 * * We don't create a global framework, we stop at the per-sdk frameworks mtouch created.
+			 * * Finally we merge the simulator framework and the device framework into a global framework, that supports both simulator and device.
 			 * * We dsymutil those frameworks.
 			 */
 
