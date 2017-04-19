@@ -70,14 +70,15 @@ namespace ObjC {
 
 		protected override void Generate (Assembly a)
 		{
-			var name = SanitizeName (a.GetName ().Name);
+			var originalName = a.GetName ().Name;
+			var name = SanitizeName (originalName);
 			implementation.WriteLine ($"static void __lookup_assembly_{name} ()");
 			implementation.WriteLine ("{");
 			implementation.WriteLine ($"\tif (__{name}_image)");
 			implementation.WriteLine ("\t\treturn;");
 			implementation.WriteLine ("\t__initialize_mono ();");
-			implementation.WriteLine ($"\t__{name}_image = mono_embeddinator_load_assembly (&__mono_context, \"{name}.dll\");");
-			implementation.WriteLine ($"\tassert (__{name}_image && \"Could not load the assembly '{name}.dll'.\");");
+			implementation.WriteLine ($"\t__{name}_image = mono_embeddinator_load_assembly (&__mono_context, \"{originalName}.dll\");");
+			implementation.WriteLine ($"\tassert (__{name}_image && \"Could not load the assembly '{originalName}.dll'.\");");
 			implementation.WriteLine ("}");
 			implementation.WriteLine ();
 
