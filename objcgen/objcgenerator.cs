@@ -43,7 +43,7 @@ namespace ObjC {
 			implementation.WriteLine ();
 
 			foreach (var a in assemblies)
-				implementation.WriteLine ($"MonoImage* __{a.GetName ().Name}_image;");
+				implementation.WriteLine ($"MonoImage* __{SanitizeName (a.GetName ().Name)}_image;");
 			implementation.WriteLine ();
 
 			foreach (var t in types)
@@ -63,7 +63,7 @@ namespace ObjC {
 
 		protected override void Generate (Assembly a)
 		{
-			var name = a.GetName ().Name;
+			var name = SanitizeName (a.GetName ().Name);
 			implementation.WriteLine ($"static void __lookup_assembly_{name} ()");
 			implementation.WriteLine ("{");
 			implementation.WriteLine ($"\tif (__{name}_image)");
@@ -145,7 +145,7 @@ namespace ObjC {
 			implementation.WriteLine ("{");
 			implementation.WriteLine ($"\tif (self != [{managed_name} class])");
 			implementation.WriteLine ("\t\treturn;");
-			var aname = t.Assembly.GetName ().Name;
+			var aname = SanitizeName (t.Assembly.GetName ().Name);
 			implementation.WriteLine ($"\t__lookup_assembly_{aname} ();");
 
 			implementation.WriteLine ("#if TOKENLOOKUP");
@@ -681,6 +681,38 @@ namespace ObjC {
 			if (s.Length == 0)
 				return String.Empty;
 			return Char.ToUpperInvariant (s [0]) + s.Substring (1, s.Length - 1);
+		}
+
+		public static string SanitizeName (string name)
+		{
+			StringBuilder sb = null;
+
+			for (int i = 0; i < name.Length; i++) {
+				var ch = name [i];
+				switch (ch) {
+				case '.':
+				case '+':
+				case '/':
+				case '`':
+				case '@':
+				case '<':
+				case '>':
+				case '$':
+				case '-':
+					if (sb == null)
+						sb = new StringBuilder (name, 0, i, name.Length);
+					sb.Append ('_');
+					break;
+				default:
+					if (sb != null)
+						sb.Append (ch);
+					break;
+				}
+			}
+
+			if (sb != null)
+				return sb.ToString ();
+			return name;
 		}
 	}
 }
