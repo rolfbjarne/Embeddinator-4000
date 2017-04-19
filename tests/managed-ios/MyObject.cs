@@ -4,10 +4,16 @@ namespace CustomUI
 {
     public class MyObject : NSObject
     {
-		[Export ("add:")]
-		public int Add (int a, int b)
+		[Export ("addStatic:to:")]
+		public static int AddStatic (int a, int b)
 		{
 			return a + b;
 		}
-    }
+
+		[Export ("addInstance:to:")]
+		public int AddInstance (int a, int b)
+		{
+			return a + b;
+		}
+	}
 }

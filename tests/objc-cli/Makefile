@@ -20,11 +20,8 @@ $(MANAGED_DLL): $(wildcard $(MANAGED_DLL_DIR)/*.cs)
 	mkdir -p $(dir $@)
 	cp $< $@
 
-debug/libmanaged-ios/libmanaged-ios.dylib: $(TESTS_MANAGED_IOS_DLL) $(OBJC_GEN)
-	$(MONO) --debug $(OBJC_GEN) --debug $(abspath $<) -c -o $(abspath $(dir $@)) --platform ios
-
-debug/libmanaged-ios-framework/managed-ios.framework: debug/managed-ios.dll $(OBJC_GEN)
-	/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono --debug $(abspath $(OBJC_GEN)) --debug $(abspath $<) -c --outdir=$(abspath $(dir $@)) --target=framework --platform=ios
+debug/libmanaged-ios-framework/managed-ios.framework: $(TESTS_MANAGED_IOS_DLL) $(OBJC_GEN)
+	$(MONO) --debug $(abspath $(OBJC_GEN)) --debug $(abspath $<) -c --outdir=$(abspath $(dir $@)) --target=framework --platform=ios
 
 debug/libmanaged.dylib: debug/managed.dll $(OBJC_GEN)
 	$(MONO) --debug $(OBJC_GEN) --debug debug/managed.dll -c -o debug

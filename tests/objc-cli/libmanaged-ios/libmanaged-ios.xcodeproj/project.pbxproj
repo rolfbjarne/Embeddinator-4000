@@ -14,7 +14,7 @@
 		7E577A4B1E9E5A4B003FA392 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E577A491E9E5A4B003FA392 /* Main.storyboard */; };
 		7E577A4D1E9E5A4B003FA392 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E577A4C1E9E5A4B003FA392 /* Assets.xcassets */; };
 		7E577A501E9E5A4B003FA392 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E577A4E1E9E5A4B003FA392 /* LaunchScreen.storyboard */; };
-		7E577A5B1E9E5A4C003FA392 /* libmanaged_iosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E577A5A1E9E5A4C003FA392 /* libmanaged_iosTests.m */; };
+		7E577A5B1E9E5A4C003FA392 /* iosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E577A5A1E9E5A4C003FA392 /* iosTests.m */; };
 		7E577A661E9E5A5E003FA392 /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E577A651E9E5A5E003FA392 /* Tests.m */; };
 		7E577A681E9E5AEA003FA392 /* managed-ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E577A671E9E5AEA003FA392 /* managed-ios.framework */; };
 		7E577A6B1E9E5D9C003FA392 /* managed-ios.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7E577A671E9E5AEA003FA392 /* managed-ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -66,7 +66,7 @@
 		7E577A4F1E9E5A4B003FA392 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7E577A511E9E5A4B003FA392 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7E577A561E9E5A4C003FA392 /* libmanaged-iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "libmanaged-iosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E577A5A1E9E5A4C003FA392 /* libmanaged_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = libmanaged_iosTests.m; sourceTree = "<group>"; };
+		7E577A5A1E9E5A4C003FA392 /* iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iosTests.m; sourceTree = "<group>"; };
 		7E577A5C1E9E5A4C003FA392 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7E577A651E9E5A5E003FA392 /* Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Tests.m; path = ../../libmanaged/Tests/Tests.m; sourceTree = "<group>"; };
 		7E577A671E9E5AEA003FA392 /* managed-ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "managed-ios.framework"; path = "../debug/libmanaged-ios-framework/managed-ios.framework"; sourceTree = "<group>"; };
@@ -139,7 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				7E577A651E9E5A5E003FA392 /* Tests.m */,
-				7E577A5A1E9E5A4C003FA392 /* libmanaged_iosTests.m */,
+				7E577A5A1E9E5A4C003FA392 /* iosTests.m */,
 				7E577A5C1E9E5A4C003FA392 /* Info.plist */,
 			);
 			path = "libmanaged-iosTests";
@@ -261,7 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7E577A5B1E9E5A4C003FA392 /* libmanaged_iosTests.m in Sources */,
+				7E577A5B1E9E5A4C003FA392 /* iosTests.m in Sources */,
 				7E577A661E9E5A5E003FA392 /* Tests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
