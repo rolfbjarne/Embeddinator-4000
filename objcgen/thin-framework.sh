@@ -1,10 +1,13 @@
 #!/bin/sh -ex
 
-# This script will remove any simulator support from a framework.
+# This script will remove any simulator support from a framework, and any
+# other files that are not needed in a final app.
+
 # It will:
 #   - Remove any simulator architectures from the executable
 #   - Remove any managed libraries and related files that are simulator-specific
 #   - Fix Info.plist to not say the framework is supporting the simulator anymore.
+#   - Remove all headers (these are not needed once the app has been built).
 
 IN_FRAMEWORK=
 OUT_FRAMEWORK=
@@ -56,6 +59,7 @@ fi
 mkdir -p "$OUT_FRAMEWORK"
 cp -R "$IN_FRAMEWORK/" "$OUT_FRAMEWORK/"
 rm -Rf "$OUT_FRAMEWORK/MonoBundle/simulator"
+rm -Rf "$OUT_FRAMEWORK/Headers"
 xcrun lipo "$IN_FRAMEWORK/$NAME" $LIPO_CMDS -output "$OUT_FRAMEWORK/$NAME"
 
 C=0
