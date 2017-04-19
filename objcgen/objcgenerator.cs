@@ -58,6 +58,13 @@ namespace ObjC {
 			implementation.WriteLine ("}");
 			implementation.WriteLine ();
 
+			// The generated registrar code calls this method on every entry point.
+			implementation.WriteLine ("void xamarin_embeddinator_initialize ()");
+			implementation.WriteLine ("{");
+			implementation.WriteLine ("\t__initialize_mono ();");
+			implementation.WriteLine ("}");
+			implementation.WriteLine ();
+
 			base.Generate (assemblies);
 		}
 
