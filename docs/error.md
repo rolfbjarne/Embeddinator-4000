@@ -62,6 +62,10 @@ The tool could not merge the frameworks mentioned in the error message, because 
 
 This might indicate a bug in the Embeddinator-4000; please file a bug report at [https://github.com/mono/Embeddinator-4000/issues](https://github.com/mono/Embeddinator-4000/issues) with a test case.
 
+<h3><a name="EM0011"/>EM0011: Can't find the assembly 'X', referenced by 'Y'.</h3>
+
+The tool could not find the assembly 'X', referenced by the assembly 'Y'. Please make sure all referenced assemblies are in the same directory as the assembly to be bound.
+
 <h3><a name="EM0099"/>EM0099: Internal error *. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).</h3>
 
 This error message is reported when an internal consistency check in the Embeddinator-4000 fails.

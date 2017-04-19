@@ -207,11 +207,44 @@ namespace Embeddinator {
 		public TargetLanguage TargetLanguage { get; private set; } = TargetLanguage.ObjectiveC;
 		public CompilationTarget CompilationTarget { get; set; } = CompilationTarget.SharedLibrary;
 
+		public string PlatformSdkDirectory {
+			get {
+				switch (Platform) {
+				case Platform.iOS:
+					return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS";
+				case Platform.tvOS:
+					return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.TVOS";
+				case Platform.watchOS:
+					return "/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.WatchOS";
+				case Platform.macOS:
+					throw new NotImplementedException ("mac platform sdk"); // need to know full/mobile
+				default:
+					throw ErrorHelper.CreateError (99, "Internal error: invalid platform {0}. Please file a bug report with a test case (https://github.com/mono/Embeddinator-4000/issues).", Platform);
+				}
+			}
+		}
+
 		public int Generate (List<string> args)
 		{
 			Console.WriteLine ("Parsing assemblies...");
 
 			var universe = new Universe (UniverseOptions.MetadataOnly);
+
+			universe.AssemblyResolve += (object sender, IKVM.Reflection.ResolveEventArgs resolve_args) => {
+				var directories = new List<string> ();
+				directories.Add (PlatformSdkDirectory);
+				foreach (var asm in Assemblies)
+					directories.Add (Path.GetDirectoryName (asm.Location));
+
+				AssemblyName an = new AssemblyName (resolve_args.Name);
+				foreach (var dir in directories) {
+					var filename = Path.Combine (dir, an.Name + ".dll");
+					if (File.Exists (filename))
+						return universe.LoadFile (filename);
+				}
+				throw ErrorHelper.CreateError (11, $"Can't find the assembly '{resolve_args.Name}', referenced by '{resolve_args.RequestingAssembly.FullName}'.");
+			};
+
 			foreach (var arg in args) {
 				Assemblies.Add (universe.LoadFile (arg));
 				Console.WriteLine ($"\tParsed '{arg}'");
