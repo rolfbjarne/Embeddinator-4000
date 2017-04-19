@@ -539,8 +539,8 @@ namespace Embeddinator {
 						var fwdir = Path.Combine (appdir, "Frameworks", $"{LibraryName}.framework");
 						var headers = Path.Combine (fwdir, "Headers");
 						Directory.CreateDirectory (headers);
-						File.Copy (Path.Combine (OutputDirectory, "embeddinator.h"), Path.Combine (headers, "embeddinator.h"));
-						File.Copy (Path.Combine (OutputDirectory, "bindings.h"), Path.Combine (headers, $"{LibraryName}.h"));
+						File.Copy (Path.Combine (OutputDirectory, "embeddinator.h"), Path.Combine (headers, "embeddinator.h"), true);
+						File.Copy (Path.Combine (OutputDirectory, "bindings.h"), Path.Combine (headers, $"bindings.h"), true);
 						// Move the framework to the output directory
 						var fwpath = Path.Combine (OutputDirectory, build_info.Sdk, $"{LibraryName}.framework");
 						if (Directory.Exists (fwpath))
