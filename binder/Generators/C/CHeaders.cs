@@ -27,7 +27,7 @@ namespace MonoEmbeddinator4000.Generators
             WriteLine("#pragma once");
             NewLine();
 
-            WriteInclude("mono_embeddinator.h");
+            WriteInclude("embeddinator.h");
         }
 
         public override void Process()

@@ -25,10 +25,8 @@ namespace MonoEmbeddinator4000.Generators
         {
             WriteLine("#include \"{0}.h\"", Unit.FileNameWithoutExtension);
             WriteLine("#include \"glib.h\"");
-            WriteLine("#include <mono/jit/jit.h>");
-            WriteLine("#include <mono/metadata/assembly.h>");
-            WriteLine("#include <mono/metadata/object.h>");
-            WriteLine("#include <mono/metadata/mono-config.h>");
+            WriteLine("#include \"mono-support.h\"");
+            WriteLine("#include \"mono_embeddinator.h\"");
         }
 
         void RemoveTypedefNodes()
