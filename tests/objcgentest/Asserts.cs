@@ -42,5 +42,12 @@ namespace DriverTest
 			Assert.Fail ($"Executing '{filename} {arguments}' failed with exit code {exitCode}: {message}");
 		}
 
+		public static void Generate (string message, params string [] arguments)
+		{
+			var rv = Driver.Main2 (arguments);
+			if (rv == 0)
+				return;
+			Assert.Fail ($"Generation failed with exit code {rv}: {message}");
+		}
 	}
 }

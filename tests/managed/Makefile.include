@@ -1,5 +1,15 @@
 GENERIC_MANAGED_DLL=$(TOP)/tests/managed/generic/bin/Debug/managed.dll
 IOS_MANAGED_DLL=$(TOP)/tests/managed/ios/bin/Debug/managed-ios.dll
+MACOS_MODERN_MANAGED_DLL=$(TOP)/tests/managed/macos-modern/bin/Debug/managed-macos-modern.dll
+MACOS_FULL_MANAGED_DLL=$(TOP)/tests/managed/macos-full/bin/Debug/managed-macos-full.dll
+MACOS_SYSTEM_MANAGED_DLL=$(TOP)/tests/managed/macos-system/bin/Debug/managed-macos-system.dll
+
+ALL_MANAGED_DLLS = \
+	$(GENERIC_MANAGED_DLL) \
+	$(IOS_MANAGED_DLL) \
+	$(MACOS_MODERN_MANAGED_DLL) \
+	$(MACOS_FULL_MANAGED_DLL) \
+	$(MACOS_SYSTEM_MANAGED_DLL) \
 
 MANAGED_DEPENDENCIES = \
 	$(wildcard $(TOP)/tests/managed/*.projitems) \
@@ -9,8 +19,8 @@ MANAGED_DEPENDENCIES = \
 	$(wildcard $(TOP)/tests/managed/*.cs) \
 	$(wildcard $(TOP)/tests/managed/*.tt) \
 
-$(GENERIC_MANAGED_DLL): $(MANAGED_DEPENDENCIES)
-	/Library/Frameworks/Mono.framework/Versions/Current/Commands/msbuild $(TOP)/tests/managed/generic/managed-generic.csproj
+$(ALL_MANAGED_DLLS): $(MANAGED_DEPENDENCIES)
+	/Library/Frameworks/Mono.framework/Versions/Current/Commands/msbuild $(wildcard $(abspath $(dir $@)../../*.csproj))
 
-$(IOS_MANAGED_DLL): $(MANAGED_DEPENDENCIES)
-	/Library/Frameworks/Mono.framework/Versions/Current/Commands/msbuild $(TOP)/tests/managed/ios/managed-ios.csproj
+# each project file wants to generate subscripts.cs, and running in parallel breaks badly.
+.NOTPARALLEL:

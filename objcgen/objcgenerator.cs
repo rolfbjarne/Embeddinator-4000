@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +12,7 @@ using Embeddinator;
 namespace ObjC {
 	
 	public partial class ObjCGenerator : Generator {
+		public string BundleIdentifier { get; set; }
 
 		SourceWriter headers = new SourceWriter ();
 		SourceWriter implementation = new SourceWriter ();
@@ -57,6 +58,30 @@ namespace ObjC {
 			}
 			implementation.WriteLine ();
 
+			implementation.WriteLine ("static MonoAssembly * __find_assembly (const char *assembly)");
+			implementation.WriteLine ("{");
+			implementation.Indent++;
+			implementation.WriteLineUnindented ("#if defined(XAMARIN_IOS) || defined(XAMARIN_MAC)");
+
+			implementation.WriteLine ("return xamarin_open_assembly (assembly);");
+			implementation.WriteLineUnindented ("#else");
+			implementation.WriteLine ($"NSBundle *bundle = [NSBundle bundleWithIdentifier:@\"{BundleIdentifier}\"];");
+			implementation.WriteLine ("NSString *path = [[bundle resourcePath] stringByAppendingPathComponent: @\"MonoBundle\"];");
+			implementation.WriteLine ("path = [path stringByAppendingPathComponent: [NSString stringWithUTF8String:assembly]];");
+			implementation.WriteLine ("if ([[NSFileManager defaultManager] fileExistsAtPath: path]) {");
+			implementation.Indent++;
+			implementation.WriteLine ("return mono_assembly_open ([path UTF8String], NULL);");
+			implementation.Indent--;
+			implementation.WriteLine ("} else {");
+			implementation.Indent++; 
+			implementation.WriteLine ("return NULL;");
+			implementation.Indent--; 
+			implementation.WriteLine ("}");
+			implementation.WriteLineUnindented ("#endif");
+			implementation.Indent--;
+			implementation.WriteLine ("}");
+			implementation.WriteLine ();
+
 			implementation.WriteLine ("static void __initialize_mono ()");
 			implementation.WriteLine ("{");
 			implementation.Indent++;
@@ -65,6 +90,7 @@ namespace ObjC {
 			implementation.WriteLine ("return;");
 			implementation.Indent--;
 			implementation.WriteLine ("mono_embeddinator_init (&__mono_context, \"mono_embeddinator_binding\");");
+			implementation.WriteLine ("mono_embeddinator_install_assembly_load_hook (&__find_assembly);");
 			implementation.Indent--;
 			implementation.WriteLine ("}");
 			implementation.WriteLine ();
