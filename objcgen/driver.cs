@@ -318,6 +318,13 @@ namespace Embeddinator {
 
 			BuildInfo [] build_infos;
 
+			SystemCheck.VerifyMono ();
+			if (Platform == Platform.macOS) {
+				SystemCheck.VerifyXamarinMac ();
+			} else {
+				SystemCheck.VerifyXamariniOS ();
+			}
+
 			switch (Platform) {
 			case Platform.macOS:
 				build_infos = new BuildInfo [] {
